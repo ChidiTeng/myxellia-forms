@@ -30,15 +30,17 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: handle auth expiration and sanitize error responses
+// Response Interceptor: handle auth expiration
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
       const { status } = error.response;
-      if (status === 401 || status === 403) {
-        console.warn('Session expired or unauthorized request. Clearing session.');
-        // Clear stored session tokens on auth failure
+      // Only clear credentials on 401 (expired/invalid JWT).
+      // 403 is an authorization issue — the JWT is still structurally valid,
+      // the user simply lacks permission for this specific resource.
+      if (status === 401) {
+        console.warn('JWT expired or invalid. Clearing session — user must re-authenticate via a new magic link.');
         clearSession();
       }
     }

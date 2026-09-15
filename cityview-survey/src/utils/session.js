@@ -1,19 +1,25 @@
 const STORAGE_KEYS = {
   TOKEN: 'cityview_survey_token',
+  REFRESH_TOKEN: 'cityview_survey_refresh_token',
   PROJECT_ID: 'cityview_survey_project_id',
   DEMO: 'cityview_survey_demo',
 };
 
 /**
- * Initializes session from URL query parameters and cleans the URL immediately.
- * Specifically extracts `magic` (or `token`) and `project_id`, stores them in
- * sessionStorage, and scrubs the URL with window.history.replaceState to prevent
- * the sensitive token from persisting in browser history, address bars, or referrers.
+ * Parses URL query parameters, stores non-sensitive identifiers (project_id, demo)
+ * in sessionStorage, and scrubs ALL sensitive parameters from the browser address bar
+ * immediately to prevent exposure via browser history, referrers, or shoulder surfing.
+ *
+ * Returns the raw magic token (if present) in memory WITHOUT persisting it.
+ * The caller MUST exchange it via the verify-magic-token endpoint to obtain a JWT
+ * before the app can authenticate against protected API endpoints.
  */
 export function initSessionFromUrl() {
   if (typeof window === 'undefined') {
-    return { token: null, projectId: null, isDemo: false };
+    return { magicToken: null, projectId: null, isDemo: false };
   }
+
+  let magicToken = null;
 
   try {
     const searchParams = new URLSearchParams(window.location.search);
@@ -23,8 +29,10 @@ export function initSessionFromUrl() {
 
     let urlModified = false;
 
+    // Extract magic token into local variable only — never persist the raw
+    // one-time token to sessionStorage, localStorage, cookies, or any durable store.
     if (magicParam && magicParam.trim()) {
-      sessionStorage.setItem(STORAGE_KEYS.TOKEN, magicParam.trim());
+      magicToken = magicParam.trim();
       searchParams.delete('magic');
       searchParams.delete('token');
       urlModified = true;
@@ -61,10 +69,32 @@ export function initSessionFromUrl() {
   }
 
   return {
-    token: getAuthToken(),
+    magicToken,
     projectId: getProjectId(),
     isDemo: isDemoMode(),
   };
+}
+
+/**
+ * Persist JWT credentials obtained from the verify-magic-token exchange.
+ * Only the derived access token (and optional refresh token) are stored —
+ * the raw magic token is intentionally discarded after exchange.
+ *
+ * @param {string} accessToken - JWT access token for Bearer auth
+ * @param {string|null} [refreshToken] - JWT refresh token for future renewal
+ */
+export function setAuthTokens(accessToken, refreshToken = null) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (accessToken) {
+      sessionStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
+    }
+    if (refreshToken) {
+      sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    }
+  } catch (err) {
+    console.error('Failed to store auth tokens:', err);
+  }
 }
 
 /**
@@ -80,12 +110,25 @@ export function isDemoMode() {
 }
 
 /**
- * Retrieve active authorization token from session storage
+ * Retrieve active JWT access token from session storage.
+ * After the magic-token exchange, this returns the real JWT — not the raw magic token.
  */
 export function getAuthToken() {
   if (typeof window === 'undefined') return null;
   try {
     return sessionStorage.getItem(STORAGE_KEYS.TOKEN) || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Retrieve the JWT refresh token from session storage (if stored).
+ */
+export function getRefreshToken() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN) || null;
   } catch {
     return null;
   }
@@ -111,12 +154,15 @@ export function hasValidSession() {
 }
 
 /**
- * Clear session storage upon logout or explicit session invalidation
+ * Clear all session credentials.
+ * Called on confirmed authentication expiry (HTTP 401) — after which the user
+ * must obtain a fresh magic link from their invitation email.
  */
 export function clearSession() {
   if (typeof window === 'undefined') return;
   try {
     sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.PROJECT_ID);
   } catch (err) {
     console.error('Failed to clear session:', err);
