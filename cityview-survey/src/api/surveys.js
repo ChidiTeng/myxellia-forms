@@ -79,14 +79,35 @@ export async function fetchPendingSurveys(projectId) {
   }
 
   const response = await apiClient.get(`surveys/pending/?project_id=${encodeURIComponent(projectId)}`);
-  return response.data;
+  const data = response.data;
+
+  // 10x Resilient Normalization:
+  // Ensure every survey item has an authoritative recipient_id mapped from the API payload
+  if (data && Array.isArray(data.results)) {
+    data.results = data.results.map((survey) => {
+      const resolvedRecipientId =
+        survey.recipient_id ??
+        survey.recipientId ??
+        survey.recipient?.id ??
+        data.recipient_id ??
+        data.recipientId ??
+        null;
+
+      return {
+        ...survey,
+        recipient_id: resolvedRecipientId,
+      };
+    });
+  }
+
+  return data;
 }
 
 /**
  * Submits an answer for a specific survey recipient.
  * Endpoint: POST /surveys/{recipient_id}/submit/
  *
- * @param {string|number} recipientId
+ * @param {string|number} recipientId - Authoritatively retrieved from fetched survey data
  * @param {number} optionId
  * @returns {Promise<any>}
  */
@@ -96,8 +117,8 @@ export async function submitSurveyAnswer(recipientId, optionId) {
     return { message: 'Survey response submitted successfully' };
   }
 
-  if (!recipientId) {
-    throw new Error('Recipient ID is required to submit survey.');
+  if (recipientId === undefined || recipientId === null || recipientId === '') {
+    throw new Error('Recipient ID was not found in fetched survey data. Cannot submit without a valid recipient.');
   }
   if (optionId === undefined || optionId === null) {
     throw new Error('An option selection is required.');

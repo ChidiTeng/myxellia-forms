@@ -32,7 +32,10 @@ export default function DynamicSurveyStep({
   function handleSubmit(e) {
     e.preventDefault();
     if (selectedOptionId === null || isSubmitting) return;
-    onSubmit(selectedOptionId);
+
+    // Authoritative recipient_id from the fetched survey entity
+    const recipientId = survey.recipient_id ?? survey.recipientId;
+    onSubmit(selectedOptionId, recipientId);
   }
 
   return (

@@ -36,6 +36,14 @@ export function initSessionFromUrl() {
       urlModified = true;
     }
 
+    // Clean any legacy recipient_id params from URL without storing them
+    // (recipient_id is authoritatively provided by the fetched survey endpoint)
+    if (searchParams.has('recipient_id') || searchParams.has('recipient')) {
+      searchParams.delete('recipient_id');
+      searchParams.delete('recipient');
+      urlModified = true;
+    }
+
     if (demoParam === 'true') {
       sessionStorage.setItem(STORAGE_KEYS.DEMO, 'true');
       searchParams.delete('demo');

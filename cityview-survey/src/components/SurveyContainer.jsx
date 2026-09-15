@@ -30,16 +30,30 @@ export default function SurveyContainer() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentIndex, isCompleted]);
 
-  // Handle survey submission for the current survey in results
-  async function handleOptionSubmit(optionId) {
+  // Handle survey submission with recipient_id resolved directly from fetched survey data
+  async function handleOptionSubmit(optionId, explicitRecipientId) {
     if (!data?.results || !data.results[currentIndex]) return;
 
     const currentSurvey = data.results[currentIndex];
     setSubmitError(null);
 
+    // 10x Resilient Resolution:
+    // Sourced strictly from the fetched API response, never from query parameters
+    const recipientId =
+      explicitRecipientId ??
+      currentSurvey?.recipient_id ??
+      currentSurvey?.recipientId ??
+      data?.recipient_id ??
+      data?.recipientId;
+
+    if (!recipientId && recipientId !== 0) {
+      setSubmitError('Unable to identify survey recipient from server response. Please reload and try again.');
+      return;
+    }
+
     try {
       await submitMutation.mutateAsync({
-        recipientId: currentSurvey.recipient_id,
+        recipientId,
         optionId,
       });
 
