@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { getAuthToken, clearSession } from '../utils/session';
 
-// Base_URL from process.env with fallback
-const RAW_BASE_URL = (typeof process !== 'undefined' && process.env?.Base_URL)
-  ? process.env.Base_URL
-  : 'https://dev.matadortrust.com/v2';
+// Base_URL from Vite env / process.env with fallback
+const RAW_BASE_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BASE_URL) ||
+  (typeof process !== 'undefined' && process.env?.Base_URL) ||
+  'https://dev.matadortrust.com/v2';
 
 // Ensure baseURL ends with a trailing slash so relative paths like 'surveys/...' preserve the '/v2' prefix
 export const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') + '/';
@@ -25,9 +26,6 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Prevent accidental caching of sensitive survey endpoints in browsers
-    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-    config.headers['Pragma'] = 'no-cache';
     return config;
   },
   (error) => Promise.reject(error)
