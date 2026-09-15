@@ -3,7 +3,6 @@ import { getAuthToken, clearSession } from '../utils/session';
 
 // Base_URL from Vite env / process.env with fallback
 const RAW_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_BASE_URL) ||
   (typeof process !== 'undefined' && process.env?.Base_URL) ||
   'https://dev.matadortrust.com/v2';
 
