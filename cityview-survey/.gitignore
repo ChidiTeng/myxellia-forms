@@ -5,5 +5,3 @@ dist/
 *.env
 .env.production
 *.env.production
-
-/.env.local
