@@ -20,7 +20,7 @@ export async function verifyMagicToken(magicToken) {
   }
 
   const response = await axios.post(
-    `${BASE_URL}webstore/verify-magic-token/`,
+    `${BASE_URL}store/verify-magic-token/`,
     {
       token: magicToken.trim(),
       store_name: '',
