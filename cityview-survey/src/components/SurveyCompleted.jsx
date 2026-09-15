@@ -6,10 +6,12 @@ import React from 'react';
 export default function SurveyCompleted({ headingRef }) {
   return (
     <section id="done">
-      <div className="tick" aria-hidden="true">
-        <svg viewBox="0 0 20 20" fill="none">
-          <path d="M4 10.5L8 14.5L16 5.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+      <div className="breathable-icon-wrap">
+        <div className="breathable-icon success" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
       </div>
 
       <h1 ref={headingRef} tabIndex={-1}>
@@ -21,13 +23,14 @@ export default function SurveyCompleted({ headingRef }) {
         Your survey answers have been securely recorded. Our development and estate team will use these preferences to guide the master planning and scheduling for your unit.
       </p>
 
-      <div className="sentto">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z" fill="#20099B" />
+      <div className="completion-badge-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <polyline points="9 12 11 14 15 10"></polyline>
         </svg>
         <div>
-          <b>Responses Saved Successfully</b>
-          <small>You may now safely close this window.</small>
+          <b>Responses Authenticated &amp; Saved</b>
+          <small>You may now safely close this browser window.</small>
         </div>
       </div>
     </section>

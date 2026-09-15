@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 /**
- * Renders a single survey question and its selectable options.
+ * Renders a single survey question and its selectable options with a luxury aesthetic.
  *
  * @param {Object} props
  * @param {Object} props.survey - The survey item from results array
@@ -27,6 +27,7 @@ export default function DynamicSurveyStep({
 
   const sortedOptions = [...(survey.options || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const isLast = currentIndex === totalSurveys - 1;
+  const progressPercent = Math.round(((currentIndex + 1) / totalSurveys) * 100);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -36,29 +37,36 @@ export default function DynamicSurveyStep({
 
   return (
     <form onSubmit={handleSubmit}>
+      {/* Unit Identifier Pill */}
       {survey.unit_identifier && (
-        <div className="unit-badge" title="Associated unit">
+        <div className="unit-badge" title="Associated Estate Unit">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            <path d="M3 21h18M5 21V7l8-4v18M13 3l6 4v14M9 9h1M9 13h1M9 17h1M17 11h1M17 15h1"></path>
           </svg>
           <span>{survey.unit_identifier}</span>
         </div>
       )}
 
-      <div className="survey-meta">
-        <p className="step">
-          Survey {currentIndex + 1} of {totalSurveys}
-        </p>
-        {survey.survey_name && (
-          <span className="survey-name-tag">{survey.survey_name}</span>
-        )}
+      {/* Progress & Survey Category */}
+      <div className="survey-header-meta">
+        <div className="progress-track" aria-hidden="true">
+          <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
+        </div>
+        <div className="meta-row">
+          <span className="step-label">
+            Step {currentIndex + 1} of {totalSurveys}
+          </span>
+          {survey.survey_name && (
+            <span className="survey-title-tag">{survey.survey_name}</span>
+          )}
+        </div>
       </div>
 
       <h1 ref={headingRef} tabIndex={-1}>
         {survey.question}
       </h1>
 
+      {/* Remark Advisory Box */}
       {survey.remark && (
         <div className="remark-box" role="note">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -70,6 +78,7 @@ export default function DynamicSurveyStep({
         </div>
       )}
 
+      {/* Selectable Options */}
       <fieldset>
         <legend>{survey.question}</legend>
         {sortedOptions.map((opt) => {
@@ -85,18 +94,24 @@ export default function DynamicSurveyStep({
                 disabled={isSubmitting}
                 required
               />
-              <span>{opt.label}</span>
+              <div className="opt-card">
+                <div className="opt-radio-ring" aria-hidden="true">
+                  <div className="opt-radio-dot" />
+                </div>
+                <span>{opt.label}</span>
+              </div>
             </label>
           );
         })}
       </fieldset>
 
       {error && (
-        <p className="error" role="alert" style={{ marginTop: '16px' }}>
+        <p className="error" role="alert" style={{ marginTop: '18px' }}>
           {error}
         </p>
       )}
 
+      {/* Actions */}
       <div className="actions end">
         <button
           className="go"
@@ -108,10 +123,14 @@ export default function DynamicSurveyStep({
               <span className="spinner" aria-hidden="true" />
               Submitting…
             </>
-          ) : isLast ? (
-            'Submit Survey'
           ) : (
-            'Continue'
+            <>
+              <span>{isLast ? 'Submit Survey' : 'Continue'}</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </>
           )}
         </button>
       </div>
