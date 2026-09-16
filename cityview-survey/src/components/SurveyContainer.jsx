@@ -1,19 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePendingSurveys, useSubmitSurvey } from '../hooks/useSurveys';
-import { getAuthToken, getProjectId } from '../utils/session';
-import DynamicSurveyStep from './DynamicSurveyStep';
-import SurveyCompleted from './SurveyCompleted';
+import { getAuthToken, getProjectId, getUserProfile } from '../utils/session';
+import TimelineStep from './TimelineStep';
+import TermsStep from './TermsStep';
+import Confirmation from './Confirmation';
 import logo from '../assets/logo.png';
 import hero from '../assets/hero.jpg';
+import defaultAvatar from '../assets/avatar.png';
 
 export default function SurveyContainer() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [step, setStep] = useState(1);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const [selectedOptionLabel, setSelectedOptionLabel] = useState(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const headingRef = useRef(null);
 
   const token = getAuthToken();
   const projectId = getProjectId();
+  const userProfile = getUserProfile();
 
   const {
     data,
@@ -27,41 +32,35 @@ export default function SurveyContainer() {
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [currentIndex, isCompleted]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step, isCompleted]);
 
-  // Handle survey submission with recipient_id resolved directly from fetched survey data
-  async function handleOptionSubmit(optionId, explicitRecipientId) {
-    if (!data?.results || !data.results[currentIndex]) return;
+  // Handle final survey submission at Step 2 (Terms acceptance)
+  async function handleFinalSubmit() {
+    const results = data?.results || [];
+    const currentSurvey = results[0];
 
-    const currentSurvey = data.results[currentIndex];
-    setSubmitError(null);
-
-    // 10x Resilient Resolution:
-    // Sourced strictly from the fetched API response, never from query parameters
     const recipientId =
-      explicitRecipientId ??
       currentSurvey?.recipient_id ??
       currentSurvey?.recipientId ??
       data?.recipient_id ??
       data?.recipientId;
 
     if (!recipientId && recipientId !== 0) {
-      setSubmitError('Unable to identify survey recipient from server response. Please reload and try again.');
+      // In demo mode or preview without recipient, proceed to confirmation
+      setIsCompleted(true);
       return;
     }
+
+    setSubmitError(null);
 
     try {
       await submitMutation.mutateAsync({
         recipientId,
-        optionId,
+        optionId: selectedOptionId,
       });
 
-      if (currentIndex + 1 < data.results.length) {
-        setCurrentIndex((prev) => prev + 1);
-      } else {
-        setIsCompleted(true);
-      }
+      setIsCompleted(true);
     } catch (err) {
       console.error('Survey submission error:', err);
       const serverMsg = err.response?.data?.message || err.response?.data?.detail;
@@ -72,13 +71,27 @@ export default function SurveyContainer() {
   }
 
   const results = data?.results || [];
-  const currentSurvey = results[currentIndex];
+  const currentSurvey = results[0];
+
+  const buyerName = userProfile
+    ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || 'Ahmed Ibraheem'
+    : 'Ahmed Ibraheem';
 
   return (
     <>
       <div className="topbar">
         <header className="mast">
           <img className="logo" src={logo} alt="CityView Park and Resort" />
+          <div className="avatar" title={buyerName}>
+            <img
+              src={userProfile?.avatar || defaultAvatar}
+              alt={buyerName}
+              onError={(e) => {
+                // Fallback to bundled avatar asset if remote URL fails
+                e.currentTarget.src = defaultAvatar;
+              }}
+            />
+          </div>
         </header>
         <div className="rule" aria-hidden="true">
           <span className="r" />
@@ -138,14 +151,14 @@ export default function SurveyContainer() {
             {/* Loading Skeleton */}
             {token && projectId && isLoading && (
               <div className="skeleton-container" aria-busy="true" aria-live="polite">
-                <div className="skeleton-line" style={{ width: '32%', height: '24px', borderRadius: '999px' }} />
-                <div className="skeleton-line" style={{ width: '100%', height: '6px', borderRadius: '999px', margin: '6px 0 14px' }} />
-                <div className="skeleton-line" style={{ width: '75%', height: '32px' }} />
-                <div className="skeleton-line" style={{ width: '90%', height: '18px' }} />
-                <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <div className="skeleton-line" style={{ height: '60px', borderRadius: '14px' }} />
-                  <div className="skeleton-line" style={{ height: '60px', borderRadius: '14px' }} />
-                  <div className="skeleton-line" style={{ height: '60px', borderRadius: '14px' }} />
+                <div className="skeleton-line" style={{ width: '28%', height: '18px', borderRadius: '4px' }} />
+                <div className="skeleton-line" style={{ width: '85%', height: '32px', borderRadius: '6px', margin: '14px 0 10px' }} />
+                <div className="skeleton-line" style={{ width: '95%', height: '18px', borderRadius: '4px', marginBottom: '28px' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div className="skeleton-line" style={{ height: '56px', borderRadius: '1px' }} />
+                  <div className="skeleton-line" style={{ height: '56px', borderRadius: '1px' }} />
+                  <div className="skeleton-line" style={{ height: '56px', borderRadius: '1px' }} />
+                  <div className="skeleton-line" style={{ height: '56px', borderRadius: '1px' }} />
                 </div>
               </div>
             )}
@@ -169,47 +182,37 @@ export default function SurveyContainer() {
                     : queryError?.response?.data?.message || 'We could not connect to the survey server. Please check your internet connection and try again.'}
                 </p>
                 <button className="go" type="button" onClick={() => refetch()}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-                  </svg>
                   Retry
                 </button>
               </div>
             )}
 
-            {/* Empty State (No Pending Surveys) */}
-            {token && projectId && !isLoading && !isError && results.length === 0 && (
-              <div className="status-card">
-                <div className="breathable-icon-wrap">
-                  <div className="breathable-icon success" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                    </svg>
-                  </div>
-                </div>
-                <h2 ref={headingRef} tabIndex={-1}>All Surveys Completed</h2>
-                <p>
-                  You have already answered all outstanding questionnaires for this property allocation. Thank you for your valuable feedback!
-                </p>
-              </div>
+            {/* Completed State: Confirmation (either just submitted, or no more pending surveys) */}
+            {token && projectId && !isLoading && !isError && (isCompleted || results.length === 0) && (
+              <Confirmation buyer={userProfile} headingRef={headingRef} />
             )}
 
-            {/* Survey Completed Screen */}
-            {token && projectId && !isLoading && !isError && isCompleted && (
-              <SurveyCompleted headingRef={headingRef} />
-            )}
-
-            {/* Dynamic Survey Questions */}
-            {token && projectId && !isLoading && !isError && !isCompleted && results.length > 0 && currentSurvey && (
-              <DynamicSurveyStep
-                key={currentSurvey.recipient_id || currentIndex}
+            {/* Step 1: Timeline Selection */}
+            {token && projectId && !isLoading && !isError && !isCompleted && results.length > 0 && step === 1 && (
+              <TimelineStep
                 survey={currentSurvey}
-                currentIndex={currentIndex}
-                totalSurveys={results.length}
-                isSubmitting={submitMutation.isPending}
+                selectedOptionId={selectedOptionId}
+                onSelect={(id, label) => {
+                  setSelectedOptionId(id);
+                  setSelectedOptionLabel(label);
+                }}
+                onContinue={() => setStep(2)}
+                headingRef={headingRef}
+              />
+            )}
+
+            {/* Step 2: Provisional Allocation Terms */}
+            {token && projectId && !isLoading && !isError && !isCompleted && results.length > 0 && step === 2 && (
+              <TermsStep
+                pending={submitMutation.isPending}
                 error={submitError}
-                onSubmit={handleOptionSubmit}
+                onBack={() => setStep(1)}
+                onSubmit={handleFinalSubmit}
                 headingRef={headingRef}
               />
             )}

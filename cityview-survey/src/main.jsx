@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SurveyContainer from './components/SurveyContainer';
-import { initSessionFromUrl, setAuthTokens, getAuthToken } from './utils/session';
+import { initSessionFromUrl, setAuthTokens, setUserProfile, getAuthToken } from './utils/session';
 import { verifyMagicToken } from './api/auth';
 import './styles.css';
 
@@ -51,6 +51,9 @@ function AuthGate({ children }) {
         try {
           const credentials = await verifyMagicToken(magicToken);
           setAuthTokens(credentials.accessToken, credentials.refreshToken);
+          if (credentials.user) {
+            setUserProfile(credentials.user);
+          }
         } catch (err) {
           // Exchange failed (expired link, network error, already consumed).
           // Log for diagnostics; SurveyContainer will render the appropriate

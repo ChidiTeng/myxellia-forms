@@ -3,6 +3,7 @@ const STORAGE_KEYS = {
   REFRESH_TOKEN: 'cityview_survey_refresh_token',
   PROJECT_ID: 'cityview_survey_project_id',
   DEMO: 'cityview_survey_demo',
+  USER: 'cityview_survey_user',
 };
 
 /**
@@ -147,6 +148,31 @@ export function getProjectId() {
 }
 
 /**
+ * Persist user profile (name, email, avatar).
+ */
+export function setUserProfile(profile) {
+  if (typeof window === 'undefined' || !profile) return;
+  try {
+    sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(profile));
+  } catch (err) {
+    console.error('Failed to store user profile:', err);
+  }
+}
+
+/**
+ * Retrieve user profile from session storage.
+ */
+export function getUserProfile() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const data = sessionStorage.getItem(STORAGE_KEYS.USER);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Check if the current session has valid authentication credentials
  */
 export function hasValidSession() {
@@ -164,6 +190,7 @@ export function clearSession() {
     sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.PROJECT_ID);
+    sessionStorage.removeItem(STORAGE_KEYS.USER);
   } catch (err) {
     console.error('Failed to clear session:', err);
   }

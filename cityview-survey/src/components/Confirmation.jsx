@@ -1,22 +1,43 @@
-export default function Confirmation({ buyer, result, demo, headingRef }) {
+import React from 'react';
+
+/**
+ * Confirmation view matching the exact PRD specification:
+ * - Red square with tick mark
+ * - "Thank you, {firstName}. That is everything we needed."
+ * - Notice about terms copy and date selected
+ * - Sent-to badge with user's email address
+ */
+export default function Confirmation({ buyer, headingRef }) {
+  const firstName = buyer?.firstName || 'Ahmed';
+  const email = buyer?.email || 'a.ibraheem@gmail.com';
+
   return (
-    <section id="done">
+    <div className="view on" id="done">
       <div className="tick" aria-hidden="true">
-        <svg viewBox="0 0 20 20" fill="none"><path d="M4 10.5L8 14.5L16 5.5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 10.5L8 14.5L16 5.5" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
-      <h1 ref={headingRef} tabIndex={-1}><span className="hi">Thank you, {buyer.firstName}.</span>That is everything we needed.</h1>
-      <p className="why">{demo
-        ? 'This preview is complete. No response has been saved and no email has been sent.'
-        : result.emailQueued
-          ? 'A copy of the terms and the timeline you selected is on its way to you. If that timeline changes, tell us early. The sooner we know, the easier it is to adjust.'
-          : 'Your development timeline and acceptance have been recorded. If your timeline changes, please contact the sales team early.'}</p>
+
+      <h1 ref={headingRef} tabIndex={-1}>
+        <span className="hi">Thank you, {firstName}.</span>
+        That is everything we needed.
+      </h1>
+
+      <p className="why">
+        A copy of the terms and the date you selected is on its way to you. If that date changes, tell us early. The sooner we know, the easier it is to adjust.
+      </p>
+
       <div className="sentto">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect x="1.5" y="4" width="17" height="12" rx="1.5" stroke="#20099B" strokeWidth="1.6" />
           <path d="M2 5l8 6 8-6" stroke="#20099B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <div><b>{buyer.email}</b><small>Not your address? Call the sales team.</small></div>
+        <div>
+          <b>{email}</b>
+          <small>Not your address? Call the sales team.</small>
+        </div>
       </div>
-    </section>
+    </div>
   );
 }

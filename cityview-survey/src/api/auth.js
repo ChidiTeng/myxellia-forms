@@ -50,8 +50,18 @@ export async function verifyMagicToken(magicToken) {
     );
   }
 
+  const rawUser = data?.user || {};
+  const innerUser = rawUser?.user || {};
+  const user = {
+    firstName: innerUser.first_name || rawUser.first_name || 'Ahmed',
+    lastName: innerUser.last_name || rawUser.last_name || '',
+    email: innerUser.email || rawUser.email || '',
+    avatar: rawUser.avatar || innerUser.avatar || null,
+  };
+
   return {
     accessToken,
     refreshToken: data.user_tokens?.refresh ?? null,
+    user,
   };
 }
