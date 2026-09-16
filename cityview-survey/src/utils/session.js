@@ -59,6 +59,41 @@ export function initSessionFromUrl() {
       urlModified = true;
     }
 
+    // Extract user profile parameters (first_name, last_name, email) from URL
+    const firstNameParam = searchParams.get('first_name') || searchParams.get('firstName');
+    const lastNameParam = searchParams.get('last_name') || searchParams.get('lastName');
+    const nameParam = searchParams.get('name') || searchParams.get('fullName');
+    const emailParam = searchParams.get('email');
+
+    let firstName = firstNameParam?.trim() || '';
+    let lastName = lastNameParam?.trim() || '';
+    if (!firstName && nameParam?.trim()) {
+      const parts = nameParam.trim().split(/\s+/);
+      firstName = parts[0] || '';
+      lastName = parts.slice(1).join(' ');
+    }
+    const email = emailParam?.trim() || '';
+
+    if (firstName || lastName || email) {
+      const existing = getUserProfile() || {};
+      const updated = {
+        ...existing,
+        ...(firstName ? { firstName } : {}),
+        ...(lastName ? { lastName } : {}),
+        ...(email ? { email } : {}),
+      };
+      sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updated));
+    }
+
+    // Scrub all user profile parameters from the URL
+    const userParams = ['first_name', 'firstName', 'last_name', 'lastName', 'name', 'fullName', 'email'];
+    for (const param of userParams) {
+      if (searchParams.has(param)) {
+        searchParams.delete(param);
+        urlModified = true;
+      }
+    }
+
     // Immediately sanitize URL without reloading page
     if (urlModified) {
       const remainingSearch = searchParams.toString();
@@ -149,11 +184,19 @@ export function getProjectId() {
 
 /**
  * Persist user profile (name, email, avatar).
+ * Query parameter values take precedence over token info.
  */
 export function setUserProfile(profile) {
   if (typeof window === 'undefined' || !profile) return;
   try {
-    sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(profile));
+    const existing = getUserProfile() || {};
+    const merged = {
+      firstName: existing.firstName || profile.firstName || 'Ahmed',
+      lastName: existing.lastName || profile.lastName || '',
+      email: existing.email || profile.email || '',
+      avatar: existing.avatar || profile.avatar || null,
+    };
+    sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(merged));
   } catch (err) {
     console.error('Failed to store user profile:', err);
   }
@@ -166,11 +209,28 @@ export function getUserProfile() {
   if (typeof window === 'undefined') return null;
   try {
     const data = sessionStorage.getItem(STORAGE_KEYS.USER);
-    console.log('user profile', data)
     return data ? JSON.parse(data) : null;
   } catch {
     return null;
   }
+}
+
+/**
+ * Compute user initials for the avatar badge (e.g. "Ahmed Ibraheem" -> "AI").
+ */
+export function getUserInitials(user) {
+  const first = user?.firstName?.trim() || '';
+  const last = user?.lastName?.trim() || '';
+  if (first && last) {
+    return `${first[0]}${last[0]}`.toUpperCase();
+  }
+  if (first) {
+    return first.slice(0, 2).toUpperCase();
+  }
+  if (last) {
+    return last.slice(0, 2).toUpperCase();
+  }
+  return 'AI';
 }
 
 /**

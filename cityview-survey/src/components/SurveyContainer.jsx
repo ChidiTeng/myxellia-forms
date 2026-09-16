@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePendingSurveys, useSubmitSurvey } from '../hooks/useSurveys';
-import { getAuthToken, getProjectId, getUserProfile } from '../utils/session';
+import { getAuthToken, getProjectId, getUserProfile, getUserInitials } from '../utils/session';
 import TimelineStep from './TimelineStep';
 import TermsStep from './TermsStep';
 import Confirmation from './Confirmation';
 import logo from '../assets/logo.png';
 import hero from '../assets/hero.jpg';
-import defaultAvatar from '../assets/avatar.png';
 
 export default function SurveyContainer() {
   const [step, setStep] = useState(1);
@@ -19,6 +18,7 @@ export default function SurveyContainer() {
   const token = getAuthToken();
   const projectId = getProjectId();
   const userProfile = getUserProfile();
+  const initials = getUserInitials(userProfile);
 
   const {
     data,
@@ -83,15 +83,16 @@ export default function SurveyContainer() {
       <div className="topbar">
         <header className="mast">
           <img className="logo" src={logo} alt="CityView Park and Resort" />
-          <div className="avatar" title={buyerName}>
-            <img
-              src={userProfile?.avatar || defaultAvatar}
-              alt={buyerName}
-              onError={(e) => {
-                // Fallback to bundled avatar asset if remote URL fails
-                e.currentTarget.src = defaultAvatar;
-              }}
-            />
+          <div className="avatar-wrapper">
+            <div className="avatar" tabIndex={0} aria-label={buyerName} role="button">
+              <span className="avatar-initials">{initials}</span>
+              <span className="avatar-status-pip" aria-hidden="true" />
+            </div>
+            <div className="avatar-tooltip" role="tooltip">
+              <span className="tooltip-name">{buyerName}</span>
+              {userProfile?.email && <span className="tooltip-email">{userProfile.email}</span>}
+              <span className="tooltip-arrow" aria-hidden="true" />
+            </div>
           </div>
         </header>
         <div className="rule" aria-hidden="true">
