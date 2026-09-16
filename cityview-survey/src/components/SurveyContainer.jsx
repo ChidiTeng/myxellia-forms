@@ -39,6 +39,7 @@ export default function SurveyContainer() {
   async function handleFinalSubmit() {
     const results = data?.results || [];
     const currentSurvey = results[0];
+    console.log('currentSurvey', currentSurvey);
 
     const recipientId =
       currentSurvey?.recipient_id ??

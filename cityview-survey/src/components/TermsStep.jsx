@@ -45,7 +45,7 @@ export default function TermsStep({ pending, error, onBack, onSubmit, headingRef
         Provisional allocation terms
       </h1>
       <p className="why">
-        Read to the end, then accept to complete your notification. Version 1.0.
+        Read to the end, then accept to complete your notification.
       </p>
 
       <div
