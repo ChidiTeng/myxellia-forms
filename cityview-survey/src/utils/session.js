@@ -166,6 +166,7 @@ export function getUserProfile() {
   if (typeof window === 'undefined') return null;
   try {
     const data = sessionStorage.getItem(STORAGE_KEYS.USER);
+    console.log('user profile', data)
     return data ? JSON.parse(data) : null;
   } catch {
     return null;
