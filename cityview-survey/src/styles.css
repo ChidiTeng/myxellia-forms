@@ -50,6 +50,12 @@ body {
   display: block;
 }
 
+.mast .who {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted);
+}
+
 .avatar-wrapper {
   position: relative;
   display: inline-flex;
@@ -226,6 +232,17 @@ h1 {
   color: var(--ink);
   letter-spacing: -0.3px;
   margin: 0 0 10px 0;
+  outline: none;
+}
+
+h1:focus,
+h1:focus-visible,
+h2:focus,
+h2:focus-visible,
+[tabindex="-1"]:focus,
+[tabindex="-1"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .why {
@@ -533,6 +550,142 @@ h1 .hi {
 
 .view.on {
   display: block;
+}
+
+/* Link Required */
+#link-required {
+  animation: sleekFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mark {
+  width: 46px;
+  height: 46px;
+  background: var(--navy);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 24px 0;
+  box-shadow: 0 4px 14px rgba(32, 9, 155, 0.16);
+  animation: sleekMarkPop 0.55s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.mark:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 6px 18px rgba(32, 9, 155, 0.22);
+}
+
+.mark svg {
+  width: 21px;
+  height: 21px;
+}
+
+#link-required h1 {
+  font-size: 27px;
+  line-height: 36px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.4px;
+  margin: 0 0 16px 0;
+  outline: none;
+  animation: sleekFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+}
+
+#link-required h1:focus,
+#link-required h1:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+#link-required .why {
+  font-size: 14px;
+  line-height: 23px;
+  color: var(--body);
+  margin: 0 0 14px 0;
+  animation: sleekFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+#link-required .why:last-of-type {
+  margin-bottom: 0;
+}
+
+.subject {
+  background: var(--plate);
+  border-left: 4px solid var(--navy);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 16px;
+  margin: 22px 0 0 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--ink);
+  animation: sleekFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.subject:hover {
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(32, 9, 155, 0.06);
+}
+
+.subject span {
+  display: block;
+  font-size: 12px;
+  line-height: 19px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.help {
+  margin: 28px 0 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+  animation: sleekFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.help p {
+  margin: 0 0 10px 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--body);
+}
+
+.help .tel {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted);
+}
+
+.help .tel a {
+  color: var(--navy);
+  transition: opacity 0.15s ease;
+}
+
+.help .tel a:hover {
+  opacity: 0.8;
+}
+
+@keyframes sleekFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sleekMarkPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Status / Alert / Auth fallback card styles */

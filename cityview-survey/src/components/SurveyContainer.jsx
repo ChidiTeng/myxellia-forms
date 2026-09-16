@@ -4,6 +4,7 @@ import { getAuthToken, getProjectId, getUserProfile, getUserInitials } from '../
 import TimelineStep from './TimelineStep';
 import TermsStep from './TermsStep';
 import Confirmation from './Confirmation';
+import SurveyLinkRequired from './SurveyLinkRequired';
 import logo from '../assets/logo.png';
 import hero from '../assets/hero.jpg';
 
@@ -77,22 +78,28 @@ export default function SurveyContainer() {
     ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || 'Ahmed Ibraheem'
     : 'Ahmed Ibraheem';
 
+  const isMissingLink = !token || !projectId;
+
   return (
     <>
       <div className="topbar">
         <header className="mast">
           <img className="logo" src={logo} alt="CityView Park and Resort" />
-          <div className="avatar-wrapper">
-            <div className="avatar" tabIndex={0} aria-label={buyerName} role="button">
-              <span className="avatar-initials">{initials}</span>
-              {/* <span className="avatar-status-pip" aria-hidden="true" /> */}
+          {isMissingLink ? (
+            <div className="who">Gousa District, Abuja</div>
+          ) : (
+            <div className="avatar-wrapper">
+              <div className="avatar" tabIndex={0} aria-label={buyerName} role="button">
+                <span className="avatar-initials">{initials}</span>
+                {/* <span className="avatar-status-pip" aria-hidden="true" /> */}
+              </div>
+              {/* <div className="avatar-tooltip" role="tooltip">
+                <span className="tooltip-name">{buyerName}</span>
+                {userProfile?.email && <span className="tooltip-email">{userProfile.email}</span>}
+                <span className="tooltip-arrow" aria-hidden="true" />
+              </div> */}
             </div>
-            {/* <div className="avatar-tooltip" role="tooltip">
-              <span className="tooltip-name">{buyerName}</span>
-              {userProfile?.email && <span className="tooltip-email">{userProfile.email}</span>}
-              <span className="tooltip-arrow" aria-hidden="true" />
-            </div> */}
-          </div>
+          )}
         </header>
         <div className="rule" aria-hidden="true">
           <span className="r" />
@@ -101,52 +108,19 @@ export default function SurveyContainer() {
       </div>
 
       <main className="shell">
-        <div
-          className="visual"
-          style={{ '--hero': `url("${hero}")` }}
-          aria-hidden="true"
-        />
+        {!isMissingLink && (
+          <div
+            className="visual"
+            style={{ '--hero': `url("${hero}")` }}
+            aria-hidden="true"
+          />
+        )}
 
         <div className="panel">
           <div className="card">
             {/* Missing Token or Project ID State */}
-            {(!token || !projectId) && (
-              <div className="status-card">
-                <div className="portal-tag">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                  <span>Private Client Portal</span>
-                </div>
-
-                <div className="breathable-icon-wrap">
-                  <div className="breathable-icon warning" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-                      <path d="M22 7l-10 7L2 7"></path>
-                      <circle cx="18" cy="15" r="3" fill="#D97706" stroke="#FFFFFF" strokeWidth="1.5"></circle>
-                    </svg>
-                  </div>
-                </div>
-
-                <h2 ref={headingRef} tabIndex={-1}>Personal Survey Link Required</h2>
-                <p>
-                  This questionnaire is tailored specifically to your property unit. To securely record your preferences, please open the direct survey link found in your invitation email.
-                </p>
-
-                <div className="guidance-box">
-                  <div className="guidance-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                      <polyline points="22,6 12,13 2,6"></polyline>
-                    </svg>
-                  </div>
-                  <p>
-                    <strong>Check your inbox:</strong> Click the <em>&quot;Take Survey&quot;</em> or <em>&quot;Confirm Timeline&quot;</em> button in your email to authenticate automatically.
-                  </p>
-                </div>
-              </div>
+            {isMissingLink && (
+              <SurveyLinkRequired headingRef={headingRef} />
             )}
 
             {/* Loading Skeleton */}
