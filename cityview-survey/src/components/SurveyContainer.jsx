@@ -85,13 +85,13 @@ export default function SurveyContainer() {
           <div className="avatar-wrapper">
             <div className="avatar" tabIndex={0} aria-label={buyerName} role="button">
               <span className="avatar-initials">{initials}</span>
-              <span className="avatar-status-pip" aria-hidden="true" />
+              {/* <span className="avatar-status-pip" aria-hidden="true" /> */}
             </div>
-            <div className="avatar-tooltip" role="tooltip">
+            {/* <div className="avatar-tooltip" role="tooltip">
               <span className="tooltip-name">{buyerName}</span>
               {userProfile?.email && <span className="tooltip-email">{userProfile.email}</span>}
               <span className="tooltip-arrow" aria-hidden="true" />
-            </div>
+            </div> */}
           </div>
         </header>
         <div className="rule" aria-hidden="true">
