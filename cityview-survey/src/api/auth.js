@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BASE_URL } from './client';
+import { NEXT_PUBLIC_BASE_URL } from './client';
 
 /**
  * Exchanges a one-time magic link token for JWT credentials.
@@ -20,7 +20,7 @@ export async function verifyMagicToken(magicToken) {
   }
 
   const response = await axios.post(
-    `${BASE_URL}store/verify-magic-token/`,
+    `${NEXT_PUBLIC_BASE_URL}store/verify-magic-token/`,
     {
       token: magicToken.trim(),
       store_name: '',

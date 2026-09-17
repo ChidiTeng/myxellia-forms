@@ -6,8 +6,8 @@ import React, { useEffect } from 'react';
  */
 export default function SurveyLinkRequired({
   headingRef,
-  supportPhone = '{{support_phone}}',
-  supportEmail = '{{support_email}}',
+  supportPhone = '+234 915 922 2222',
+  supportEmail = 'landmarkhq@lcrng.com',
 }) {
   useEffect(() => {
     document.title = 'Link required | CityView Park & Resort';
@@ -42,7 +42,7 @@ export default function SurveyLinkRequired({
       <div className="help">
         <p>Cannot find it? Check your spam folder first.</p>
         <p className="tel">
-          Call the sales team on <a href={`tel:${supportPhone}`}>{supportPhone}</a> or email <a href={`mailto:${supportEmail}`}>{supportEmail}</a> and we will send it again.
+          Call the sales team on <a href={`tel:${supportPhone.replace(/\s+/g, '')}`}>{supportPhone}</a> or email <a href={`mailto:${supportEmail}`}>{supportEmail}</a> and we will send it again.
         </p>
       </div>
     </div>

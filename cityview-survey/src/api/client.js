@@ -1,16 +1,16 @@
 import axios from 'axios';
 import { getAuthToken, clearSession } from '../utils/session';
 
-// Base_URL from Vite env / process.env with fallback
-const RAW_BASE_URL =
-  (typeof process !== 'undefined' && process.env?.Base_URL) ||
+// NEXT_PUBLIC_BASE_URL from Vite env / process.env with fallback
+const RAW_NEXT_PUBLIC_BASE_URL =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BASE_URL) ||
   'https://dev.matadortrust.com/v2';
 
 // Ensure baseURL ends with a trailing slash so relative paths like 'surveys/...' preserve the '/v2' prefix
-export const BASE_URL = RAW_BASE_URL.replace(/\/+$/, '') + '/';
+export const NEXT_PUBLIC_BASE_URL = RAW_NEXT_PUBLIC_BASE_URL.replace(/\/+$/, '') + '/';
 
 export const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: NEXT_PUBLIC_BASE_URL,
   timeout: 20000,
   headers: {
     'Accept': 'application/json',
