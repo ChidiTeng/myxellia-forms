@@ -25,6 +25,10 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(`[AUTH:client] → ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
+      hasBearer: Boolean(token),
+      tokenPreview: token ? `${token.slice(0, 20)}…` : null,
+    });
     return config;
   },
   (error) => Promise.reject(error)
@@ -32,17 +36,25 @@ apiClient.interceptors.request.use(
 
 // Response Interceptor: handle auth expiration
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[AUTH:client] ← ${response.status} ${response.config?.url}`);
+    return response;
+  },
   (error) => {
     if (error.response) {
-      const { status } = error.response;
+      const { status, data } = error.response;
+      console.error(`[AUTH:client] ← ${status} ${error.config?.url}`, {
+        responseData: data,
+      });
       // Only clear credentials on 401 (expired/invalid JWT).
       // 403 is an authorization issue — the JWT is still structurally valid,
       // the user simply lacks permission for this specific resource.
       if (status === 401) {
-        console.warn('JWT expired or invalid. Clearing session — user must re-authenticate via a new magic link.');
+        console.warn('[AUTH:client] 401 received — CLEARING SESSION. User must re-authenticate.');
         clearSession();
       }
+    } else {
+      console.error('[AUTH:client] Network error (no response):', error.message);
     }
     return Promise.reject(error);
   }

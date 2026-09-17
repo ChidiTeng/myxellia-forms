@@ -80,6 +80,13 @@ export default function SurveyContainer() {
 
   const isMissingLink = !token || !projectId;
 
+  console.log('[AUTH:SurveyContainer] Render gate:', {
+    token: token ? `${token.slice(0, 20)}…` : null,
+    projectId,
+    isMissingLink,
+    userProfile: userProfile ? { firstName: userProfile.firstName, lastName: userProfile.lastName } : null,
+  });
+
   return (
     <>
       <div className="topbar">

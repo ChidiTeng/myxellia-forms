@@ -46,6 +46,13 @@ const queryClient = new QueryClient({
 // token in memory. Calling it here guarantees the URL is parsed before
 // React 18 StrictMode can unmount/remount and lose the params.
 const __urlSession = initSessionFromUrl();
+console.log('[AUTH] Module-scope URL parse result:', {
+  hasMagicToken: Boolean(__urlSession.magicToken),
+  magicTokenPreview: __urlSession.magicToken ? `${__urlSession.magicToken.slice(0, 8)}…` : null,
+  projectId: __urlSession.projectId,
+  isDemo: __urlSession.isDemo,
+  href: window.location.href,
+});
 
 // Shared bootstrap promise — ensures the async magic-token → JWT exchange
 // happens exactly once, and every mount of AuthGate awaits the same result.
@@ -60,26 +67,54 @@ function AuthGate({ children }) {
     // Deduplicate: the first mount creates the promise, subsequent mounts
     // (including StrictMode remount) simply .then() on the same promise.
     if (!__bootstrapPromise) {
+      console.log('[AUTH] Creating bootstrap promise (first mount)');
       __bootstrapPromise = (async () => {
         const { magicToken } = __urlSession;
 
         if (magicToken) {
+          console.log('[AUTH] Magic token found, calling verifyMagicToken…');
           const credentials = await verifyMagicToken(magicToken);
+          console.log('[AUTH] verifyMagicToken returned:', {
+            hasAccessToken: Boolean(credentials.accessToken),
+            accessTokenPreview: credentials.accessToken ? `${credentials.accessToken.slice(0, 20)}…` : null,
+            hasRefreshToken: Boolean(credentials.refreshToken),
+            user: credentials.user,
+          });
           setAuthTokens(credentials.accessToken, credentials.refreshToken);
           if (credentials.user) {
             setUserProfile(credentials.user);
           }
+          console.log('[AUTH] Credentials stored. Session state after store:', {
+            tokenInStorage: Boolean(sessionStorage.getItem('cityview_survey_token')),
+            projectIdInStorage: sessionStorage.getItem('cityview_survey_project_id'),
+          });
+        } else {
+          console.log('[AUTH] No magic token — checking existing session:', {
+            tokenInStorage: Boolean(sessionStorage.getItem('cityview_survey_token')),
+            projectIdInStorage: sessionStorage.getItem('cityview_survey_project_id'),
+          });
         }
       })().catch((err) => {
-        // Exchange failed (expired link, network error, already consumed).
-        // Log for diagnostics; SurveyContainer will render the appropriate
-        // "Link Required" or error state based on whether a JWT exists.
-        console.error('Magic token verification failed:', err);
+        console.error('[AUTH] Magic token verification FAILED:', err);
+        console.error('[AUTH] Error details:', {
+          message: err.message,
+          status: err.response?.status,
+          responseData: err.response?.data,
+        });
       });
     }
 
     __bootstrapPromise.then(() => {
-      if (!cancelled) setReady(true);
+      if (!cancelled) {
+        console.log('[AUTH] Bootstrap complete → setReady(true). Final session:', {
+          token: Boolean(sessionStorage.getItem('cityview_survey_token')),
+          projectId: sessionStorage.getItem('cityview_survey_project_id'),
+          user: sessionStorage.getItem('cityview_survey_user'),
+        });
+        setReady(true);
+      } else {
+        console.log('[AUTH] Bootstrap complete but mount was cancelled (StrictMode unmount)');
+      }
     });
 
     // Cleanup: prevent state updates on an unmounted component.

@@ -19,8 +19,11 @@ export async function verifyMagicToken(magicToken) {
     throw new Error('Magic token is required for verification.');
   }
 
+  const url = `${NEXT_PUBLIC_BASE_URL}store/verify-magic-token/`;
+  console.log('[AUTH:verify] POST', url, '(token:', magicToken.slice(0, 8) + '…)');
+
   const response = await axios.post(
-    `${NEXT_PUBLIC_BASE_URL}store/verify-magic-token/`,
+    url,
     {
       token: magicToken.trim(),
       store_name: '',
@@ -36,15 +39,36 @@ export async function verifyMagicToken(magicToken) {
 
   const data = response.data;
 
+  console.log('[AUTH:verify] Raw response status:', response.status);
+  console.log('[AUTH:verify] Raw response data (full):', JSON.stringify(data, null, 2));
+  console.log('[AUTH:verify] Key fields:', {
+    valid: data?.valid,
+    hasUserTokens: Boolean(data?.user_tokens),
+    userTokensKeys: data?.user_tokens ? Object.keys(data.user_tokens) : [],
+    'user_tokens.token': data?.user_tokens?.token ? `${data.user_tokens.token.slice(0, 20)}…` : undefined,
+    'user_tokens.access': data?.user_tokens?.access ? `${data.user_tokens.access.slice(0, 20)}…` : undefined,
+    'user_tokens.access_token': data?.user_tokens?.access_token ? `${data.user_tokens.access_token.slice(0, 20)}…` : undefined,
+    'user_tokens.refresh': data?.user_tokens?.refresh ? `${String(data.user_tokens.refresh).slice(0, 20)}…` : undefined,
+    hasUser: Boolean(data?.user),
+    userKeys: data?.user ? Object.keys(data.user) : [],
+    topLevelKeys: Object.keys(data || {}),
+  });
+
   if (!data?.valid) {
+    console.error('[AUTH:verify] data.valid is falsy — token rejected by server');
     throw new Error(
       data?.message ||
         'Your survey link could not be verified. It may have expired or already been used.'
     );
   }
 
-  const accessToken = data.user_tokens?.token;
+  // Try multiple possible token field names from the response
+  const accessToken = data.user_tokens?.token
+    || data.user_tokens?.access
+    || data.user_tokens?.access_token;
+
   if (!accessToken) {
+    console.error('[AUTH:verify] No access token found in user_tokens. Available keys:', data.user_tokens ? Object.keys(data.user_tokens) : 'user_tokens is missing');
     throw new Error(
       'Authentication credentials were not returned by the server.'
     );
@@ -59,9 +83,17 @@ export async function verifyMagicToken(magicToken) {
     avatar: rawUser.avatar || innerUser.avatar || null,
   };
 
-  return {
+  const result = {
     accessToken,
     refreshToken: data.user_tokens?.refresh ?? null,
     user,
   };
+
+  console.log('[AUTH:verify] Parsed result:', {
+    accessTokenPreview: result.accessToken ? `${result.accessToken.slice(0, 20)}…` : null,
+    hasRefreshToken: Boolean(result.refreshToken),
+    user: result.user,
+  });
+
+  return result;
 }
