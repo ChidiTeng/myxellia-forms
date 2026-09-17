@@ -4,7 +4,7 @@ import { getAuthToken, clearSession } from '../utils/session';
 // NEXT_PUBLIC_BASE_URL from Vite env / process.env with fallback
 const RAW_NEXT_PUBLIC_BASE_URL =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_BASE_URL) ||
-  'https://dev.matadortrust.com/v2';
+  'https://api.matadortrust.com/v2';
 
 // Ensure baseURL ends with a trailing slash so relative paths like 'surveys/...' preserve the '/v2' prefix
 export const NEXT_PUBLIC_BASE_URL = RAW_NEXT_PUBLIC_BASE_URL.replace(/\/+$/, '') + '/';
