@@ -6,8 +6,8 @@ import React, { useEffect } from 'react';
  */
 export default function SurveyLinkRequired({
   headingRef,
-  supportPhone = '+234 915 922 2222',
-  supportEmail = 'landmarkhq@lcrng.com',
+  supportPhone = '+234 712 017 1162',
+  supportEmail = 'allocation@lcrng.com',
 }) {
   useEffect(() => {
     document.title = 'Link required | CityView Park & Resort';
